@@ -1,0 +1,8 @@
+/env/
+/.quarto/
+.Rproj.user
+.Rhistory
+__pycache__/
+_build/
+_site/
+app.py
