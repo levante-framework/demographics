@@ -5,26 +5,43 @@ server: shiny
 ---
 
 ```{python}
-import seaborn as sns
-penguins = sns.load_dataset("penguins")
+from shiny import render, reactive, ui
+from shiny.types import FileInfo
+import pandas as pd
+
+ui.page_fluid(
+    ui.input_file("file_input_demographic_data", "Upload your Demographic CSV file here", accept=".csv"),
+    ui.layout_columns(
+        ui.input_action_button("submit", "Submit", class_="btn-success"),
+    ),
+)
 ```
-
-## {.sidebar}
-
 ```{python}
-from shiny import render, ui
-ui.input_select("x", "Variable:",
-                choices=["bill_length_mm", "bill_depth_mm"])
-ui.input_select("dist", "Distribution:", choices=["hist", "kde"])
-ui.input_checkbox("rug", "Show rug marks", value = False)
-```
+def parsed_demographic_data_to_df():
+    file: list[FileInfo] | None = input.file_input_demographic_data()
+    if file and file[0]["datapath"]:
+        return pd.read_csv(file[0]['datapath'])
+    return pd.DataFrame()     
 
-## Column
+@reactive.calc
+def read_data():
+    if input.submit() > 0:
+        df = parsed_demographic_data_to_df()
+        print("Data parsed and loaded")
+        return df
+    return pd.DataFrame()
 
-```{python}
-@render.plot()
-def displot():
-    sns.displot(
-        data=penguins, hue="species", multiple="stack",
-        x=input.x(), rug=input.rug(), kind=input.dist())
+@render.table
+def render_data():
+    # Use the reactive function to get the DataFrame
+    return read_data() if input.submit() > 0 else pd.DataFrame()
+data_frame = read_data
+
+@render.download(filename="demographics.csv")
+async def downloadData():
+    # Get the DataFrame to download
+    df = read_data()
+    # Convert the DataFrame to CSV format
+    yield df.to_csv(index=False)
+    
 ```
