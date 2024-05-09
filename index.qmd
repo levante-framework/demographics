@@ -12,8 +12,7 @@ import pandas as pd
 ui.page_fluid(
     ui.input_file("file_input_demographic_data", "Upload your Demographic CSV file here", accept=".csv"),
     ui.layout_columns(
-        ui.input_action_button("submit", "Submit", class_="btn-success"),
-        ui.download_button("downloadData", "Download")
+        ui.input_action_button("submit", "Submit", class_="btn-success")
     ),
 )
 ```
